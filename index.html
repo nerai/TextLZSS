@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Text LZ</title>
+	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+
+	<script>
+		$ (function () {
+			var text = "aacaacabcabaaac";
+			$ ('#input').val (text);
+			display (text);
+
+			$ ("#input").on ('input', function () {
+				text = $ (this).val ();
+				display (text);
+			});
+
+			function display (text) {
+				$ ('#output').empty ();
+				var cursor = 0;
+
+				while (cursor < text.length) {
+					var bestOffset = 0;
+					var bestLen = 0;
+
+					for (var offset = 1; offset < 256 && cursor - offset >= 0; offset++) {
+						var len = 0;
+						while ((cursor + len < text.length) && (text[cursor - offset + len] == text[cursor + len])) {
+							len++;
+						}
+						if (len > bestLen) {
+							bestLen = len;
+							bestOffset = offset;
+						}
+					}
+
+					var add;
+					if (bestLen < 3) {
+						add = "<div class='lzelem lzlit'>" + text[cursor] + "</div>";
+						cursor++;
+					}
+					else {
+						add = "<div class='lzelem'>"
+							+ "    <div class='lzref'>"
+							+ "        [" + bestOffset + "," + bestLen + "]"
+							+ "    </div>"
+							//+ "    <br>"
+							+ "    <div class='lzrefval'>"
+							+ "        " + text.substr (cursor - bestOffset, bestLen)
+							+ "    </div>"
+							+ "</div>";
+						cursor += bestLen;
+					}
+					$ (add).appendTo ('#output');
+				}
+			}
+		});
+	</script>
+
+	<style>
+		html {
+			font-size: 100%;
+			font-family: sans-serif;
+		}
+
+		body {
+			font-size: 150%;
+		}
+
+		.content {
+			max-width: 1000px;
+			margin: auto;
+			text-align: center;
+		}
+
+		#input {
+			width: 100%;
+			height: 4em;
+			font-size: 110%;
+		}
+
+		.lzout {
+			font-family: Consolas;
+		}
+
+		.lzelem {
+			display: inline-block;
+			vertical-align: top;
+			margin: 0.05em;
+		}
+
+		.lzlit {
+			border: 0.1em solid red;
+			padding: 0.05em;
+		}
+
+		.lzref {
+			border: 0.1em solid blue;
+			padding: 0.05em;
+			margin: 0;
+		}
+
+		.lzrefval {
+			font-size: 50%;
+		}
+	</style>
+</head>
+
+<body>
+
+<div class="content">
+	<h1>Text LZSS</h1>
+
+	<div>Enter some text to be compressed using LZSS</div>
+	<br>
+
+	<textarea id="input"></textarea>
+	<br>
+
+	<div id="output" class="lzout"></div>
+	<!-- todo: link to this result -->
+
+	<br><br>
+	<div>
+		<h3>What is this?</h3>
+		<div style="text-align: justify; line-height: 150%; margin: auto; width: 70%">
+			<p>
+				The text is compressed using a (crude) variant of LZSS. This basically means that any long, repeated
+				character sequence gets replaced with a short reference to its previous location, thus saving space.
+			</p>
+			<p>
+				Each element in LZSS output is either a literal or a reference.
+				(In comparison, LZ77 exclusively uses references and literals combined in pairs.)
+				Red boxes represent literals (uncompressed parts).
+				Blue boxes contain references.
+				A reference consists of an offset denoting how far to look back, and a length showing how many literals
+				to copy.
+				The minimum length of a reference is 3 bytes - any less would be wasteful, as references take at least
+				two bytes space themselves.
+			</p>
+			<p>
+				This variant of LZSS does not make use of Huffman trees, which would encode (among others) control codes
+				and literals to represent them in just a few bits instead of a whole byte.
+			</p>
+		</div>
+	</div>
+</div>
+
+</body>
+
+</html>
