@@ -1,2 +1,4 @@
 # TextLZSS
-Show how text is compressed using LZSS
+Visualize how LZSS compresses text
+
+Try out the [live demo](https://nerai.github.io/TextLZSS/).
