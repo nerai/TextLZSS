@@ -7,49 +7,26 @@
 	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
 
 	<script>
-		var Aaca = `aacaacabcabaaac`;
-		var Alice = `Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'`;
-		var Powers = "";
-		for (var i = 0; i < 31; i++) {
-			Powers += (1 << i) + "\n";
-		}
-		var Pi = `3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927876611195909216420198`;
-		var Random = "";
-		for (var i = 0; i < 1000; i++) {
-			var d = Math.floor (Math.pow (2, Math.random () * 3.1)) - 1;
-			Random += String.fromCharCode (d + 97);
-		}
-		var UnicodeHi = ""
-			+ "Here are some characters that take two bytes to represent:\n"
-			+ "Ⅷ = U+2167, ⨌ = U+2A0C\n"
-			+ "\n"
-			+ "The following characters take three bytes to represent, and all share a common two-byte prefix. They range from U+28000 to U+2800F:\n"
-			+ "𨀀𨀁𨀂𨀃𨀄𨀅𨀆𨀇𨀈𨀉𨀊𨀋𨀌𨀍𨀎𨀏\n"
-			+ "Try UTF-8 instead of UTF-16 to lower the size of literals. Note that UTF-16 uses a surrogate pair (each end of size 2 bytes) to display a single 3-byte character.";
-
 		$ (function () {
-			refresh ();
-
-			function numericInput () {
-				var i = parseInt ($(this).val ());
-				if (isNaN (i)) {
-					$(this).val (0);
-					return;
-				}
-				refresh ();
+			var Aaca = `aacaacabcabaaac`;
+			var Alice = `Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'`;
+			var Powers = "";
+			for (var i = 0; i < 31; i++) {
+				Powers += (1 << i) + "\n";
 			}
-
-			$ ("#input").on ('input', refresh);
-			$ ("#offsetBits").change (numericInput);
-			$ ("#lengthBits").change (numericInput);
-			$ ("#minLength").change (numericInput);
-			$ ("#showBits").change (refresh);
-			$ ("#encodeUtf8").change (refresh);
-
-			$ ("#enableAdvanced").click (function () {
-				$ (".advanced").toggleClass ('advanced');
-				$ ("#enableAdvanced").remove ();
-			});
+			var Pi = `3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927876611195909216420198`;
+			var Random = "";
+			for (var i = 0; i < 1000; i++) {
+				var d = Math.floor (Math.pow (2, Math.random () * 3.1)) - 1;
+				Random += String.fromCharCode (d + 97);
+			}
+			var UnicodeHi = ""
+				+ "Here are some characters that take two bytes to represent:\n"
+				+ "Ⅷ = U+2167, ⨌ = U+2A0C\n"
+				+ "\n"
+				+ "The following characters take three bytes to represent, and all share a common two-byte prefix. They range from U+28000 to U+2800F:\n"
+				+ "𨀀𨀁𨀂𨀃𨀄𨀅𨀆𨀇𨀈𨀉𨀊𨀋𨀌𨀍𨀎𨀏\n"
+				+ "Try UTF-8 instead of UTF-16 to lower the size of literals. Note that UTF-16 uses a surrogate pair (each end of size 2 bytes) to display a single 3-byte character.";
 
 			$ ("#setAaca").click (function () {
 				$ ('#input').val (Aaca);
@@ -75,107 +52,140 @@
 				$ ('#input').val (UnicodeHi);
 				refresh ();
 			});
-
-			function toUtf8 (text) {
-				var utf8 = unescape (encodeURIComponent (text));
-				return utf8;
-			}
-
-			function refresh () {
-				var text = $ ('#input').val ();
-
-				var showBits = $ ('#showBits').prop ('checked');
-				var encodeUtf8 = $ ('#encodeUtf8').prop ('checked');
-
-				var litRawBits;
-				if (encodeUtf8) {
-					text = toUtf8 (text);
-					litRawBits = 8;
-				} else {
-					litRawBits = 16;
-				}
-				var litBits = litRawBits + 1;
-
-				var dictSizeBits = parseInt ($ ('#offsetBits').val ());
-				var matchSizeBits = parseInt ($ ('#lengthBits').val ());
-				var _minLength = parseInt ($ ('#minlength').val ()); // TODO
-				
-				var refBits = 1 + dictSizeBits + matchSizeBits;
-				var minMatchLength = Math.ceil ((refBits + 1) / litBits);
-
-				var dictSize = 1 << dictSizeBits;
-				var matchSize = matchSizeBits == 0
-					? 0
-					: 1 << matchSizeBits;
-				matchSize += minMatchLength;
-
-				$ ('#refSizeInfo').text (""
-					+ "A reference will take "
-					+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-					+ refBits + " bits.");
-				$ ('#litSizeInfo').text (""
-					+ "A literal will take "
-					+ "1 + " + litRawBits + " = "
-					+ litBits + " bits.");
-
-				$ ('#dictRange').text ("1 to " + dictSize);
-				$ ('#matchRange').text (minMatchLength + " to " + matchSize);
-
-				$ ('#output').empty ();
-
-				var cursor = 0;
-				while (cursor < text.length) {
-					var bestOffset = 0;
-					var bestLen = 0;
-
-					for (var offset = 1; offset <= dictSize && cursor - offset >= 0; offset++) {
-						var len = 0;
-						while (true
-						&& (cursor + len < text.length)
-						&& (len < matchSize)
-						&& (text[cursor - offset + len] == text[cursor + len])
-							) {
-							len++;
-						}
-						if (len > bestLen) {
-							bestLen = len;
-							bestOffset = offset;
-						}
-					}
-
-					var add = "<div class='lzelem'>";
-
-					if (bestLen < minMatchLength) {
-						add += "<div class='lzlit'>"
-							+ prepareLzItem (text[cursor])
-							+ "</div>";
-						if (showBits) {
-							add += "<div class='lzsubscript lzbits'>"
-								+ litBits
-								+ "</div>";
-						}
-						cursor++;
-					}
-					else {
-						add += "<div class='lzref'>"
-							+ prepareLzItem (text.substr (cursor - bestOffset, bestLen))
-							+ "</div>";
-						if (showBits) {
-							add += "<div class='lzsubscript lzbits'>"
-								+ refBits
-								+ "</div>";
-						}
-						add += "<div class='lzsubscript lzrefval'>"
-							+ "[" + bestOffset + "," + bestLen + "]"
-							+ "</div>";
-						cursor += bestLen;
-					}
-
-					add += "</div>";
-					$ (add).appendTo ('#output');
-				}
-			}
 		});
+
+		$ (function () {
+			refresh ();
+
+			function numericInput () {
+				var i = parseInt ($ (this).val ());
+				if (isNaN (i)) {
+					$ (this).val (0);
+					return;
+				}
+				refresh ();
+			}
+
+			$ ("#input").on ('input', refresh);
+			$ ("#offsetBits").change (numericInput);
+			$ ("#lengthBits").change (numericInput);
+			$ ("#minLength").change (numericInput);
+			$ ("#showBits").change (refresh);
+			$ ("#encodeUtf8").change (refresh);
+
+			$ ("#enableAdvanced").click (function () {
+				$ (".advanced").toggleClass ('advanced');
+				$ ("#enableAdvanced").remove ();
+			});
+		});
+
+
+		function refresh () {
+			/*
+			 * text and encoding
+			 */
+			var text = $ ('#input').val ();
+			var showBits = $ ('#showBits').prop ('checked');
+			var encodeUtf8 = $ ('#encodeUtf8').prop ('checked');
+
+			var litRawBits;
+			if (encodeUtf8) {
+				text = toUtf8 (text);
+				litRawBits = 8;
+			} else {
+				litRawBits = 16;
+			}
+			var litBits = litRawBits + 1;
+
+			/*
+			 * offset and length
+			 */
+			var dictSizeBits = parseInt ($ ('#offsetBits').val ());
+			var matchSizeBits = parseInt ($ ('#lengthBits').val ());
+			var refBits = 1 + dictSizeBits + matchSizeBits;
+
+			var computedMinMatchLength = Math.ceil ((refBits + 1) / litBits);
+			$ ('#minLength').attr ("min", computedMinMatchLength);
+
+			var minMatchLength = parseInt ($ ('#minLength').val ());
+			if (minMatchLength < computedMinMatchLength) {
+				minMatchLength = computedMinMatchLength;
+				$ ('#minLength').val (computedMinMatchLength);
+			}
+
+			var dictSize = 1 << dictSizeBits;
+			var matchSize = matchSizeBits == 0
+				? 0
+				: 1 << matchSizeBits;
+			matchSize += minMatchLength;
+
+			$ ('#refSizeInfo').text (""
+				+ "A reference will take "
+				+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
+				+ refBits + " bits.");
+			$ ('#litSizeInfo').text (""
+				+ "A literal will take "
+				+ "1 + " + litRawBits + " = "
+				+ litBits + " bits.");
+			$ ('#dictRange').text ("1 to " + dictSize);
+			$ ('#matchRange').text (minMatchLength + " to " + matchSize);
+
+			/*
+			 * compress
+			 */
+			$ ('#output').empty ();
+			var cursor = 0;
+			while (cursor < text.length) {
+				var bestOffset = 0;
+				var bestLen = 0;
+
+				for (var offset = 1; offset <= dictSize && cursor - offset >= 0; offset++) {
+					var len = 0;
+					while (true
+					&& (cursor + len < text.length)
+					&& (len < matchSize)
+					&& (text[cursor - offset + len] == text[cursor + len])
+						) {
+						len++;
+					}
+					if (len > bestLen) {
+						bestLen = len;
+						bestOffset = offset;
+					}
+				}
+
+				var add = "<div class='lzelem'>";
+
+				if (bestLen < minMatchLength) {
+					add += "<div class='lzlit'>"
+						+ prepareLzItem (text[cursor])
+						+ "</div>";
+					if (showBits) {
+						add += "<div class='lzsubscript lzbits'>"
+							+ litBits
+							+ "</div>";
+					}
+					cursor++;
+				}
+				else {
+					add += "<div class='lzref'>"
+						+ prepareLzItem (text.substr (cursor - bestOffset, bestLen))
+						+ "</div>";
+					if (showBits) {
+						add += "<div class='lzsubscript lzbits'>"
+							+ refBits
+							+ "</div>";
+					}
+					add += "<div class='lzsubscript lzrefval'>"
+						+ "[" + bestOffset + "," + bestLen + "]"
+						+ "</div>";
+					cursor += bestLen;
+				}
+
+				add += "</div>";
+				$ (add).appendTo ('#output');
+			}
+		}
 
 		function prepareLzItem (s) {
 			return s
@@ -184,6 +194,11 @@
 				.replace ("\r", "↩") // "␍"
 				.replace ("\n", "↲") // "␊"
 				;
+		}
+
+		function toUtf8 (text) {
+			var utf8 = unescape (encodeURIComponent (text));
+			return utf8;
 		}
 	</script>
 
@@ -308,14 +323,14 @@
 					Larger values allow for referencing larger chunks.
 				</td>
 			</tr>
-			<tr style="display: none"><!-- TODO -->
+			<tr>
 				<td>
 					<label for="minLength">Min length</label>
 				</td>
 				<td>
 					<input type="number" id="minLength" name="minLength"
 					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="3" ;>
+					       value="3" min="0" max="10" ;>
 				</td>
 				<td>
 					The minimum match length ensures that only sufficiently large matches will be used.
