@@ -90,7 +90,7 @@
 				var dictSizeBits = parseInt ($ ('#offsetBits').val ());
 				var matchSizeBits = parseInt ($ ('#lengthBits').val ());
 				var _minLength = parseInt ($ ('#minlength').val ()); // TODO
-
+				
 				var refBits = 1 + dictSizeBits + matchSizeBits;
 				var minMatchLength = Math.ceil ((refBits + 1) / litBits);
 
@@ -174,7 +174,7 @@
 				.replace ("\t", "↦") // "␉"
 				.replace ("\r", "↩") // "␍"
 				.replace ("\n", "↲") // "␊"
-		;
+				;
 		}
 	</script>
 
@@ -277,7 +277,7 @@
 				<td>
 					<input type="number" id="offsetBits" name="offsetBits"
 					       style="width: 4em; font-size: 1em; text-align: center"
-		       value="6" ;>
+					       value="6" ;>
 				</td>
 				<td>
 					Defines how many bits are used to to store the match offset.
@@ -292,7 +292,7 @@
 				<td>
 					<input type="number" id="lengthBits" name="lengthBits"
 					       style="width: 4em; font-size: 1em; text-align: center"
-		       value="4" ;>
+					       value="4" ;>
 				</td>
 				<td>
 					Controls how many bits are used to store the length of a match.
@@ -334,17 +334,17 @@
 		</div>
 		<br>
 
-	<div>
+		<div>
 			<h4>Examples</h4>
-		<div class="button" id="setAaca">Aaca</div>
-		<div class="button" id="setAlice">Alice in Wonderland</div>
-		<div class="button" id="setPowers">Powers of 2</div>
-		<div class="advanced">
-			<div class="button" id="setPi">Digits of Pi</div>
-			<div class="button" id="setRandom">Random</div>
-			<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
+			<div class="button" id="setAaca">Aaca</div>
+			<div class="button" id="setAlice">Alice in Wonderland</div>
+			<div class="button" id="setPowers">Powers of 2</div>
+			<div class="advanced">
+				<div class="button" id="setPi">Digits of Pi</div>
+				<div class="button" id="setRandom">Random</div>
+				<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
+			</div>
 		</div>
-	</div>
 	</div>
 
 	<textarea id="input">Type here. Your text will be compressed using LZSS (a common compression algorithm).</textarea>
