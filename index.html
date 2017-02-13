@@ -33,6 +33,7 @@
 			$ ("#input").on ('input', refresh);
 			$ ("#offsetBits").change (refresh);
 			$ ("#lengthBits").change (refresh);
+			$ ("#minLength").change (refresh);
 			$ ("#showBits").change (refresh);
 			$ ("#encodeUtf8").change (refresh);
 
@@ -88,6 +89,7 @@
 
 				var dictSizeBits = parseInt ($ ('#offsetBits').val ());
 				var matchSizeBits = parseInt ($ ('#lengthBits').val ());
+				var _minLength = parseInt ($ ('#minlength').val ()); // TODO
 
 				var refBits = 1 + dictSizeBits + matchSizeBits;
 				var minMatchLength = Math.ceil ((refBits + 1) / litBits);
@@ -297,6 +299,27 @@
 					Larger values allow for referencing larger chunks.
 				</td>
 			</tr>
+			<tr style="display: none"><!-- TODO -->
+				<td>
+					<label for="minLength">Min length</label>
+				</td>
+				<td>
+					<input type="number" id="minLength" name="minLength"
+					       style="width: 4em; font-size: 1em; text-align: center"
+					       value="3" ;>
+				</td>
+				<td>
+					The minimum match length ensures that only sufficiently large matches will be used.
+					Referencing a too small match would take more space than including it as a literal would.
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<div>Resulting offset range: <span id="dictRange"></span></div>
+					<div>Resulting length range: <span id="matchRange"></span></div>
+				</td>
+			</tr>
+		</table>
 
 		<div class="advanced">
 			<div id="refSizeInfo"></div>
