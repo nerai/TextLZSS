@@ -31,8 +31,9 @@
 			refresh ();
 
 			$ ("#input").on ('input', refresh);
-			$ ("#dictSize").change (refresh);
-			$ ("#matchSize").change (refresh);
+			$ ("#offsetBits").change (refresh);
+			$ ("#lengthBits").change (refresh);
+			$ ("#minLength").change (refresh);
 			$ ("#showBits").change (refresh);
 			$ ("#encodeUtf8").change (refresh);
 
@@ -86,9 +87,10 @@
 				}
 				var litBits = litRawBits + 1;
 
-				var dictSizeBits = parseInt ($ ('#dictSize').val ());
-				var matchSizeBits = parseInt ($ ('#matchSize').val ());
-
+				var dictSizeBits = parseInt ($ ('#offsetBits').val ());
+				var matchSizeBits = parseInt ($ ('#lengthBits').val ());
+				var _minLength = parseInt ($ ('#minlength').val ()); // TODO
+				
 				var refBits = 1 + dictSizeBits + matchSizeBits;
 				var minMatchLength = Math.ceil ((refBits + 1) / litBits);
 
@@ -136,9 +138,9 @@
 
 					if (bestLen < minMatchLength) {
 						add += "<div class='lzlit'>"
-							+ text[cursor]
+							+ prepareLzItem (text[cursor])
 							+ "</div>";
-						if ($ ('#showBits').prop ('checked')) {
+						if (showBits) {
 							add += "<div class='lzsubscript lzbits'>"
 								+ litBits
 								+ "</div>";
@@ -147,9 +149,9 @@
 					}
 					else {
 						add += "<div class='lzref'>"
-							+ "'" + text.substr (cursor - bestOffset, bestLen) + "'"
+							+ prepareLzItem (text.substr (cursor - bestOffset, bestLen))
 							+ "</div>";
-						if ($ ('#showBits').prop ('checked')) {
+						if (showBits) {
 							add += "<div class='lzsubscript lzbits'>"
 								+ refBits
 								+ "</div>";
@@ -164,8 +166,16 @@
 					$ (add).appendTo ('#output');
 				}
 			}
-		})
-		;
+		});
+
+		function prepareLzItem (s) {
+			return s
+				.replace (" ", "·") // "␠"
+				.replace ("\t", "↦") // "␉"
+				.replace ("\r", "↩") // "␍"
+				.replace ("\n", "↲") // "␊"
+				;
+		}
 	</script>
 
 	<style>
@@ -182,6 +192,10 @@
 			max-width: 1000px;
 			margin: auto;
 			text-align: center;
+		}
+
+		.left {
+			text-align: left;
 		}
 
 		.advanced {
@@ -229,6 +243,15 @@
 		.lzsubscript {
 			font-size: 60%;
 		}
+
+		td {
+			min-width: 5em;
+			padding: 0 0.7em 0.5em 0;
+		}
+
+		h4 {
+			margin-bottom: 0;
+		}
 	</style>
 </head>
 
@@ -244,40 +267,83 @@
 <div class="content">
 	<h1>Text LZSS</h1>
 
-	<div>
-		<label for="dictSize">Bits used to store match offset (dictionary size):</label>
-		<input type="number" id="dictSize" name="dictSize" style="width: 4em; font-size: 1em; text-align: center"
-		       value="6" ;>
-		<div>Resulting valid range: <span id="dictRange"></span></div>
-		<br>
-
-		<label for="matchSize">Bits used to store match length:</label>
-		<input type="number" id="matchSize" name="matchSize" style="width: 4em; font-size: 1em; text-align: center"
-		       value="4" ;>
-		<div>Resulting valid range: <span id="matchRange"></span></div>
-		<br>
+	<div class="left">
+		<h4>Reference options</h4>
+		<table>
+			<tr>
+				<td>
+					<label for="offsetBits">Offset bits</label>
+				</td>
+				<td>
+					<input type="number" id="offsetBits" name="offsetBits"
+					       style="width: 4em; font-size: 1em; text-align: center"
+					       value="6" ;>
+				</td>
+				<td>
+					Defines how many bits are used to to store the match offset.
+					This effectively controls the <span style="font: italic">dictionary size</span>.
+					Larger values allow references from further away.
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="lengthBits">Length bits</label>
+				</td>
+				<td>
+					<input type="number" id="lengthBits" name="lengthBits"
+					       style="width: 4em; font-size: 1em; text-align: center"
+					       value="4" ;>
+				</td>
+				<td>
+					Controls how many bits are used to store the length of a match.
+					Larger values allow for referencing larger chunks.
+				</td>
+			</tr>
+			<tr style="display: none"><!-- TODO -->
+				<td>
+					<label for="minLength">Min length</label>
+				</td>
+				<td>
+					<input type="number" id="minLength" name="minLength"
+					       style="width: 4em; font-size: 1em; text-align: center"
+					       value="3" ;>
+				</td>
+				<td>
+					The minimum match length ensures that only sufficiently large matches will be used.
+					Referencing a too small match would take more space than including it as a literal would.
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<div>Resulting offset range: <span id="dictRange"></span></div>
+					<div>Resulting length range: <span id="matchRange"></span></div>
+				</td>
+			</tr>
+		</table>
 
 		<div class="advanced">
 			<div id="refSizeInfo"></div>
 			<div id="litSizeInfo"></div>
-			<label for="showBits">Show required bits</label>
+
+			<h4>Encoding options</h4>
+			<label for="showBits">Display required bits</label>
 			<input type="checkbox" id="showBits" name="showBits">
 			<br>
 			<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
 			<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
 		</div>
 		<br>
-	</div>
 
-	<div>
-		<div>Examples:</div>
-		<div class="button" id="setAaca">Aaca</div>
-		<div class="button" id="setAlice">Alice in Wonderland</div>
-		<div class="button" id="setPowers">Powers of 2</div>
-		<div class="advanced">
-			<div class="button" id="setPi">Digits of Pi</div>
-			<div class="button" id="setRandom">Random</div>
-			<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
+		<div>
+			<h4>Examples</h4>
+			<div class="button" id="setAaca">Aaca</div>
+			<div class="button" id="setAlice">Alice in Wonderland</div>
+			<div class="button" id="setPowers">Powers of 2</div>
+			<div class="advanced">
+				<div class="button" id="setPi">Digits of Pi</div>
+				<div class="button" id="setRandom">Random</div>
+				<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
+			</div>
 		</div>
 	</div>
 
@@ -293,7 +359,7 @@
 	<br>
 	<div>
 		<h3>What is this?</h3>
-		<div style="text-align: justify; line-height: 150%; margin: auto; width: 70%">
+		<div style="text-align: justify; line-height: 150%; margin: auto; width: 80%">
 			<p>
 				The text is compressed using a (crude) variant of LZSS. This basically means that any long, repeated
 				character sequence gets replaced with a short reference to its previous location, thus saving space.
