@@ -30,10 +30,19 @@
 		$ (function () {
 			refresh ();
 
+			function numericInput () {
+				var i = parseInt ($(this).val ());
+				if (isNaN (i)) {
+					$(this).val (0);
+					return;
+				}
+				refresh ();
+			}
+
 			$ ("#input").on ('input', refresh);
-			$ ("#offsetBits").change (refresh);
-			$ ("#lengthBits").change (refresh);
-			$ ("#minLength").change (refresh);
+			$ ("#offsetBits").change (numericInput);
+			$ ("#lengthBits").change (numericInput);
+			$ ("#minLength").change (numericInput);
 			$ ("#showBits").change (refresh);
 			$ ("#encodeUtf8").change (refresh);
 
@@ -277,7 +286,7 @@
 				<td>
 					<input type="number" id="offsetBits" name="offsetBits"
 					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="6" ;>
+					       value="6" min="0" max="16" ;>
 				</td>
 				<td>
 					Defines how many bits are used to to store the match offset.
@@ -292,7 +301,7 @@
 				<td>
 					<input type="number" id="lengthBits" name="lengthBits"
 					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="4" ;>
+					       value="4" min="0" max="16" ;>
 				</td>
 				<td>
 					Controls how many bits are used to store the length of a match.
