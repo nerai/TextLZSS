@@ -31,8 +31,8 @@
 			refresh ();
 
 			$ ("#input").on ('input', refresh);
-			$ ("#dictSize").change (refresh);
-			$ ("#matchSize").change (refresh);
+			$ ("#offsetBits").change (refresh);
+			$ ("#lengthBits").change (refresh);
 			$ ("#showBits").change (refresh);
 			$ ("#encodeUtf8").change (refresh);
 
@@ -86,8 +86,8 @@
 				}
 				var litBits = litRawBits + 1;
 
-				var dictSizeBits = parseInt ($ ('#dictSize').val ());
-				var matchSizeBits = parseInt ($ ('#matchSize').val ());
+				var dictSizeBits = parseInt ($ ('#offsetBits').val ());
+				var matchSizeBits = parseInt ($ ('#lengthBits').val ());
 
 				var refBits = 1 + dictSizeBits + matchSizeBits;
 				var minMatchLength = Math.ceil ((refBits + 1) / litBits);
@@ -192,6 +192,10 @@
 			text-align: center;
 		}
 
+		.left {
+			text-align: left;
+		}
+
 		.advanced {
 			display: none;
 		}
@@ -237,6 +241,15 @@
 		.lzsubscript {
 			font-size: 60%;
 		}
+
+		td {
+			min-width: 5em;
+			padding: 0 0.7em 0.5em 0;
+		}
+
+		h4 {
+			margin-bottom: 0;
+		}
 	</style>
 </head>
 
@@ -252,33 +265,54 @@
 <div class="content">
 	<h1>Text LZSS</h1>
 
-	<div>
-		<label for="dictSize">Bits used to store match offset (dictionary size):</label>
-		<input type="number" id="dictSize" name="dictSize" style="width: 4em; font-size: 1em; text-align: center"
+	<div class="left">
+		<h4>Reference options</h4>
+		<table>
+			<tr>
+				<td>
+					<label for="offsetBits">Offset bits</label>
+				</td>
+				<td>
+					<input type="number" id="offsetBits" name="offsetBits"
+					       style="width: 4em; font-size: 1em; text-align: center"
 		       value="6" ;>
-		<div>Resulting valid range: <span id="dictRange"></span></div>
-		<br>
-
-		<label for="matchSize">Bits used to store match length:</label>
-		<input type="number" id="matchSize" name="matchSize" style="width: 4em; font-size: 1em; text-align: center"
+				</td>
+				<td>
+					Defines how many bits are used to to store the match offset.
+					This effectively controls the <span style="font: italic">dictionary size</span>.
+					Larger values allow references from further away.
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="lengthBits">Length bits</label>
+				</td>
+				<td>
+					<input type="number" id="lengthBits" name="lengthBits"
+					       style="width: 4em; font-size: 1em; text-align: center"
 		       value="4" ;>
-		<div>Resulting valid range: <span id="matchRange"></span></div>
-		<br>
+				</td>
+				<td>
+					Controls how many bits are used to store the length of a match.
+					Larger values allow for referencing larger chunks.
+				</td>
+			</tr>
 
 		<div class="advanced">
 			<div id="refSizeInfo"></div>
 			<div id="litSizeInfo"></div>
-			<label for="showBits">Show required bits</label>
+
+			<h4>Encoding options</h4>
+			<label for="showBits">Display required bits</label>
 			<input type="checkbox" id="showBits" name="showBits">
 			<br>
 			<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
 			<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
 		</div>
 		<br>
-	</div>
 
 	<div>
-		<div>Examples:</div>
+			<h4>Examples</h4>
 		<div class="button" id="setAaca">Aaca</div>
 		<div class="button" id="setAlice">Alice in Wonderland</div>
 		<div class="button" id="setPowers">Powers of 2</div>
@@ -287,6 +321,7 @@
 			<div class="button" id="setRandom">Random</div>
 			<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
 		</div>
+	</div>
 	</div>
 
 	<textarea id="input">Type here. Your text will be compressed using LZSS (a common compression algorithm).</textarea>
