@@ -136,7 +136,7 @@
 
 					if (bestLen < minMatchLength) {
 						add += "<div class='lzlit'>"
-							+ text[cursor]
+							+ prepareLzItem (text[cursor])
 							+ "</div>";
 						if ($ ('#showBits').prop ('checked')) {
 							add += "<div class='lzsubscript lzbits'>"
@@ -147,7 +147,7 @@
 					}
 					else {
 						add += "<div class='lzref'>"
-							+ "'" + text.substr (cursor - bestOffset, bestLen) + "'"
+							+ prepareLzItem (text.substr (cursor - bestOffset, bestLen))
 							+ "</div>";
 						if ($ ('#showBits').prop ('checked')) {
 							add += "<div class='lzsubscript lzbits'>"
@@ -164,8 +164,16 @@
 					$ (add).appendTo ('#output');
 				}
 			}
-		})
+		});
+
+		function prepareLzItem (s) {
+			return s
+				.replace (" ", "·") // "␠"
+				.replace ("\t", "↦") // "␉"
+				.replace ("\r", "↩") // "␍"
+				.replace ("\n", "↲") // "␊"
 		;
+		}
 	</script>
 
 	<style>
