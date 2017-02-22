@@ -215,7 +215,6 @@ Dovahkiin, fah hin kogaan mu draal!`;
 					cursor += bestLen;
 				}
 
-				it.text = prepareLzItem (it.text);
 				lzss.push (it);
 				index++;
 			}
@@ -293,7 +292,7 @@ Dovahkiin, fah hin kogaan mu draal!`;
 						}
 					}
 					add += "'>";
-					add += it.text[ci];
+					add += prepareLzItem (it.text[ci]);
 					add += "</span>";
 				}
 
@@ -437,7 +436,7 @@ Dovahkiin, fah hin kogaan mu draal!`;
 				<td>
 					<input type="number" id="offsetBits" name="offsetBits"
 					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="6" min="0" max="16" ;>
+					       value="7" min="0" max="16" ;>
 				</td>
 				<td>
 					Defines how many bits are used to to store the match offset.
