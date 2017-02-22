@@ -215,7 +215,6 @@ Dovahkiin, fah hin kogaan mu draal!`;
 					cursor += bestLen;
 				}
 
-				it.text = prepareLzItem (it.text);
 				lzss.push (it);
 				index++;
 			}
@@ -293,7 +292,7 @@ Dovahkiin, fah hin kogaan mu draal!`;
 						}
 					}
 					add += "'>";
-					add += it.text[ci];
+					add += prepareLzItem (it.text[ci]);
 					add += "</span>";
 				}
 
