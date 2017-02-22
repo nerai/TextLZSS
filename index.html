@@ -9,6 +9,40 @@
 	<script>
 		$ (function () {
 			var Aaca = `aacaacabcabaaac`;
+			var Dova = `Dovahkiin, Dovahkiin, naal ok zin los vahriin,
+Wah dein vokul mahfaeraak ahst vaal!
+Ahrk fin norok paal graan fod nust hon zindro zaan,
+Dovahkiin, fah hin kogaan mu draal!
+
+Huzrah nu, kul do od, wah aan bok lingrah vod,
+Ahrk fin tey, boziik fun, do fin gein!
+Wo lost fron wah ney dov, ahrk fin reyliik do jul,
+Voth aan suleyk wah ronit faal krein
+
+Ahrk fin zul, rok drey kod, nau tol morokei frod,
+Rul lot Taazokaan motaad voth kein!
+Sahrot Thu'um, med aan tuz, vey zeim hokoron pah,
+Ol fin Dovahkiin komeyt ok rein!
+
+Dovahkiin, Dovahkiin, naal ok zin los vahriin,
+Wah dein vokul mahfaeraak ahst vaal!
+Ahrk fin norok paal graan fod nust hon zindro zaan,
+Dovahkiin, fah hin kogaan mu draal!
+
+Ahrk fin Kel lost prodah, do ved viing ko fin krah,
+Tol fod zeymah win kein meyz fundein!
+Alduin, feyn do jun, kruziik vokun staadnau,
+Voth aan bahlok wah diivon fin lein!
+
+Nuz aan sul, fent alok, fod fin vul dovah nok,
+Fen kos nahlot mahfaeraak ahrk ruz!
+Paaz Keizaal fen kos stin nol bein Alduin jot,
+Dovahkiin kos fin saviik do muz!
+
+Dovahkiin, Dovahkiin, naal ok zin los vahriin,
+Wah dein vokul mahfaeraak ahst vaal!
+Ahrk fin norok paal graan fod nust hon zindro zaan
+Dovahkiin, fah hin kogaan mu draal!`;
 			var Alice = `Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'`;
 			var Powers = "";
 			for (var i = 0; i < 31; i++) {
@@ -30,6 +64,10 @@
 
 			$ ("#setAaca").click (function () {
 				$ ('#input').val (Aaca);
+				refresh ();
+			});
+			$ ("#setDova").click (function () {
+				$ ('#input').val (Dova);
 				refresh ();
 			});
 			$ ("#setAlice").click (function () {
@@ -363,6 +401,7 @@
 		<div>
 			<h4>Examples</h4>
 			<div class="button" id="setAaca">Aaca</div>
+			<div class="button" id="setDova">Dovahkiin</div>
 			<div class="button" id="setAlice">Alice in Wonderland</div>
 			<div class="button" id="setPowers">Powers of 2</div>
 			<div class="advanced">
