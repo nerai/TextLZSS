@@ -1,0 +1,76 @@
+
+html {
+	font-size: 100%;
+	font-family: sans-serif;
+}
+
+body {
+	font-size: 120%;
+}
+
+.content {
+	max-width: 1000px;
+	margin: auto;
+	text-align: center;
+}
+
+.left {
+	text-align: left;
+}
+
+.advanced {
+	display: none;
+}
+
+.button {
+	border: 0.1em solid #999;
+	padding: 0.3em;
+	background: #ddd;
+	display: inline-block;
+	margin: 0.5em;
+}
+
+#input {
+	width: 100%;
+	height: 10em;
+	font-size: 110%;
+}
+
+.lzout {
+	font-family: Consolas;
+}
+
+.lzelem {
+	display: inline-block;
+	vertical-align: top;
+	margin: 0.05em;
+}
+
+.activeRefSource {
+	background-color: #ffdd99;
+}
+
+.lzlit {
+	border: 0.1em solid red;
+}
+
+.lzref {
+	border: 0.1em solid blue;
+}
+
+.lzbits {
+	background: #eee;
+}
+
+.lzsubscript {
+	font-size: 60%;
+}
+
+td {
+	min-width: 5em;
+	padding: 0 0.7em 0.5em 0;
+}
+
+h4 {
+	margin-bottom: 0;
+}
