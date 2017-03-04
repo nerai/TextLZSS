@@ -110,6 +110,81 @@ $ (function () {
 });
 
 
+function prepareLzItem (s) {
+	return s
+		.replace (" ", "·") // "␠"
+		.replace ("\t", "↦") // "␉"
+		.replace ("\r", "↩") // "␍"
+		.replace ("\n", "↲") // "␊"
+		;
+}
+
+function toUtf8 (text) {
+	var utf8 = unescape (encodeURIComponent (text));
+	return utf8;
+}
+
+function render (lzss, showBits) {
+	/*
+	 * Function to highlight referenced letters.
+	 */
+	var mouseRefNode = function (entering, i) {
+		if (entering) {
+			$ ("#output .refby-" + i).addClass ('activeRefSource');
+		} else {
+			$ ("#output .refby-" + i).removeClass ('activeRefSource');
+		}
+	};
+
+	/*
+	 * Create visual elements
+	 */
+	$ ('#output').empty ();
+	for (var i = 0; i < lzss.length; i++) {
+		var it = lzss[i];
+		var add = "<div class='lzelem'>";
+
+		add += "<div class='" + (it.lit ? "lzlit" : "lzref") + "'>";
+
+		for (var ci = 0; ci < it.len; ci++) {
+			add += "<span class='";
+			for (var iref = 0; iref < it.referenced.length; iref++) {
+				var ref = it.referenced[iref];
+				var p0 = ref[0];
+				var p1 = ref[1];
+				var by = ref[2];
+				if (p0 <= ci && ci <= p1) {
+					add += "refby-" + by + " ";
+				}
+			}
+			add += "'>";
+			add += prepareLzItem (it.text[ci]);
+			add += "</span>";
+		}
+
+		add += "</div>";
+
+
+		if (showBits) {
+			add += "<div class='lzsubscript lzbits'>"
+				+ it.bits
+				+ "</div>";
+		}
+
+		if (!it.lit) {
+			add += "<div class='lzsubscript lzrefval'>"
+				+ "[" + it.offset + "," + it.len + "]"
+				+ "</div>";
+		}
+
+		add += "</div>";
+
+		$ (add)
+			.mouseenter (mouseRefNode.bind (this, true, i))
+			.mouseleave (mouseRefNode.bind (this, false, i))
+			.appendTo ('#output');
+	}
+}
 function refresh () {
 	/*
 	 * text and encoding
@@ -118,6 +193,9 @@ function refresh () {
 	var showBits = $ ('#showBits').prop ('checked');
 	var encodeUtf8 = $ ('#encodeUtf8').prop ('checked');
 
+	/*
+	 * convert text to Utf8
+	 */
 	var litRawBits;
 	if (encodeUtf8) {
 		text = toUtf8 (text);
@@ -144,10 +222,10 @@ function refresh () {
 	}
 
 	var dictSize = 1 << dictSizeBits;
-	var matchSize = matchSizeBits == 0
+		var maxMatchLength = matchSizeBits == 0
 		? 0
 		: 1 << matchSizeBits;
-	matchSize += minMatchLength;
+		maxMatchLength += minMatchLength;
 
 	$ ('#refSizeInfo').text (""
 		+ "A reference will take "
@@ -158,7 +236,7 @@ function refresh () {
 		+ "1 + " + litRawBits + " = "
 		+ litBits + " bits.");
 	$ ('#dictRange').text ("1 to " + dictSize);
-	$ ('#matchRange').text (minMatchLength + " to " + matchSize);
+		$ ('#matchRange').text (minMatchLength + " to " + maxMatchLength);
 
 	/*
 	 * compress
@@ -174,7 +252,7 @@ function refresh () {
 			var len = 0;
 			while (true
 			&& (cursor + len < text.length)
-			&& (len < matchSize)
+			&& (len < maxMatchLength)
 			&& (text[cursor - offset + len] == text[cursor + len])
 				) {
 				len++;
@@ -251,77 +329,5 @@ function refresh () {
 		}
 	}
 
-	/*
-	 * Function to highlight referenced letters.
-	 */
-	var mouseRefNode = function (entering, i) {
-		if (entering) {
-			$ ("#output .refby-" + i).addClass ('activeRefSource');
-		} else {
-			$ ("#output .refby-" + i).removeClass ('activeRefSource');
-		}
-	}
-
-	/*
-	 * Create visual elements
-	 */
-	$ ('#output').empty ();
-	for (var i = 0; i < lzss.length; i++) {
-		var it = lzss[i];
-		var add = "<div class='lzelem'>";
-
-		add += "<div class='" + (it.lit ? "lzlit" : "lzref") + "'>";
-
-		for (var ci = 0; ci < it.len; ci++) {
-			add += "<span class='";
-			for (var iref = 0; iref < it.referenced.length; iref++) {
-				var ref = it.referenced[iref];
-				var p0 = ref[0];
-				var p1 = ref[1];
-				var by = ref[2];
-				if (p0 <= ci && ci <= p1) {
-					add += "refby-" + by + " ";
-				}
-			}
-			add += "'>";
-			add += prepareLzItem (it.text[ci]);
-			add += "</span>";
-		}
-
-		add += "</div>";
-
-
-		if (showBits) {
-			add += "<div class='lzsubscript lzbits'>"
-				+ it.bits
-				+ "</div>";
-		}
-
-		if (!it.lit) {
-			add += "<div class='lzsubscript lzrefval'>"
-				+ "[" + it.offset + "," + it.len + "]"
-				+ "</div>";
-		}
-
-		add += "</div>";
-
-		$ (add)
-			.mouseenter (mouseRefNode.bind (this, true, i))
-			.mouseleave (mouseRefNode.bind (this, false, i))
-			.appendTo ('#output');
-	}
-}
-
-function prepareLzItem (s) {
-	return s
-		.replace (" ", "·") // "␠"
-		.replace ("\t", "↦") // "␉"
-		.replace ("\r", "↩") // "␍"
-		.replace ("\n", "↲") // "␊"
-		;
-}
-
-function toUtf8 (text) {
-	var utf8 = unescape (encodeURIComponent (text));
-	return utf8;
+	render (lzss, showBits);
 }
