@@ -1,3 +1,4 @@
+'use strict';
 
 $ (function () {
 	var Aaca = `aacaacabcabaaac`;
@@ -84,6 +85,8 @@ Dovahkiin, fah hin kogaan mu draal!`;
 	});
 });
 
+var varLen = false;
+
 $ (function () {
 	refresh ();
 
@@ -97,9 +100,26 @@ $ (function () {
 	}
 
 	$ ("#input").on ('input', refresh);
+
+	$ ("#btnLengthFixed").click (function () {
+		$ ('.toggler').removeClass ('toggled');
+		$ (this).addClass ('toggled');
+		varLen = false;
+		$ ('#fixedRefLengthOptions').show ();
+		refresh ();
+	});
+	$ ("#btnLengthUnary").click (function () {
+		$ ('.toggler').removeClass ('toggled');
+		$ (this).addClass ('toggled');
+		varLen = true;
+		$ ('#fixedRefLengthOptions').hide ();
+		refresh ();
+	});
+
 	$ ("#offsetBits").change (numericInput);
 	$ ("#lengthBits").change (numericInput);
 	$ ("#minLength").change (numericInput);
+
 	$ ("#showBits").change (refresh);
 	$ ("#encodeUtf8").change (refresh);
 
@@ -110,147 +130,21 @@ $ (function () {
 });
 
 
-function refresh () {
-	/*
-	 * text and encoding
-	 */
-	var text = $ ('#input').val ();
-	var showBits = $ ('#showBits').prop ('checked');
-	var encodeUtf8 = $ ('#encodeUtf8').prop ('checked');
+function prepareLzItem (s) {
+	return s
+		.replace (" ", "·") // "␠"
+		.replace ("\t", "↦") // "␉"
+		.replace ("\r", "↩") // "␍"
+		.replace ("\n", "↲") // "␊"
+		;
+}
 
-	var litRawBits;
-	if (encodeUtf8) {
-		text = toUtf8 (text);
-		litRawBits = 8;
-	} else {
-		litRawBits = 16;
-	}
-	var litBits = litRawBits + 1;
+function toUtf8 (text) {
+	var utf8 = unescape (encodeURIComponent (text));
+	return utf8;
+}
 
-	/*
-	 * offset and length
-	 */
-	var dictSizeBits = parseInt ($ ('#offsetBits').val ());
-	var matchSizeBits = parseInt ($ ('#lengthBits').val ());
-	var refBits = 1 + dictSizeBits + matchSizeBits;
-
-	var computedMinMatchLength = Math.ceil ((refBits + 1) / litBits);
-	$ ('#minLength').attr ("min", computedMinMatchLength);
-
-	var minMatchLength = parseInt ($ ('#minLength').val ());
-	if (minMatchLength < computedMinMatchLength) {
-		minMatchLength = computedMinMatchLength;
-		$ ('#minLength').val (computedMinMatchLength);
-	}
-
-	var dictSize = 1 << dictSizeBits;
-	var matchSize = matchSizeBits == 0
-		? 0
-		: 1 << matchSizeBits;
-	matchSize += minMatchLength;
-
-	$ ('#refSizeInfo').text (""
-		+ "A reference will take "
-		+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-		+ refBits + " bits.");
-	$ ('#litSizeInfo').text (""
-		+ "A literal will take "
-		+ "1 + " + litRawBits + " = "
-		+ litBits + " bits.");
-	$ ('#dictRange').text ("1 to " + dictSize);
-	$ ('#matchRange').text (minMatchLength + " to " + matchSize);
-
-	/*
-	 * compress
-	 */
-	var lzss = [];
-	var cursor = 0;
-	var index = 0;
-	while (cursor < text.length) {
-		var bestOffset = 0;
-		var bestLen = 0;
-
-		for (var offset = 1; offset <= dictSize && cursor - offset >= 0; offset++) {
-			var len = 0;
-			while (true
-			&& (cursor + len < text.length)
-			&& (len < matchSize)
-			&& (text[cursor - offset + len] == text[cursor + len])
-				) {
-				len++;
-			}
-			if (len > bestLen) {
-				bestLen = len;
-				bestOffset = offset;
-			}
-		}
-
-		var it = {
-			pos: cursor,
-			index: index,
-			referenced: [],
-		};
-
-		if (bestLen < minMatchLength) {
-			it.text = text[cursor];
-			it.lit = true;
-			it.bits = litBits;
-			it.len = 1;
-			cursor++;
-		}
-		else {
-			it.text = text.substr (cursor - bestOffset, bestLen);
-			it.lit = false;
-			it.bits = refBits;
-			it.offset = bestOffset;
-			it.len = bestLen;
-			cursor += bestLen;
-		}
-
-		lzss.push (it);
-		index++;
-	}
-	text = null;
-	cursor = null;
-
-	/*
-	 * Function to find element index for position.
-	 * Could use a lookup table or binary search, too.
-	 */
-	function findBlockAtPosition (pos, maxIndex) {
-		for (var spanindex = maxIndex; spanindex >= 0; spanindex--) {
-			var span = lzss[spanindex];
-			if (span.pos <= pos) {
-				//console.log ("block " + spanindex + " covers " + span.pos + " to " + (span.pos + span.len - 1));
-				return span;
-			}
-		}
-	}
-
-	/*
-	 * Let referenced elements link to their sources.
-	 */
-	for (var i = 0; i < lzss.length; i++) {
-		var it = lzss[i];
-		if (it.lit) {
-			continue;
-		}
-
-		var searchBeg = it.pos - it.offset;
-		var searchEnd = searchBeg + it.len - 1;
-		var end = findBlockAtPosition (searchEnd, it.index);
-		var beg = findBlockAtPosition (searchBeg, end.index);
-
-		for (var spanindex = beg.index; spanindex <= end.index; spanindex++) {
-			var span = lzss[spanindex];
-			var off0 = span == beg ? searchBeg - beg.pos : 0;
-			var off1 = span == end ? searchEnd - end.pos : span.len - 1;
-			var covered = [off0, off1, i];
-			//console.log ("lzss " + i + " references " + spanindex + " with range " + covered);
-			span.referenced.push (covered);
-		}
-	}
-
+function render (lzss, showBits) {
 	/*
 	 * Function to highlight referenced letters.
 	 */
@@ -260,7 +154,7 @@ function refresh () {
 		} else {
 			$ ("#output .refby-" + i).removeClass ('activeRefSource');
 		}
-	}
+	};
 
 	/*
 	 * Create visual elements
@@ -312,16 +206,224 @@ function refresh () {
 	}
 }
 
-function prepareLzItem (s) {
-	return s
-		.replace (" ", "·") // "␠"
-		.replace ("\t", "↦") // "␉"
-		.replace ("\r", "↩") // "␍"
-		.replace ("\n", "↲") // "␊"
-		;
+/*
+ * Length of a variable length encoded integer. Encoding is done via prefixing with its length minus 1 in unary.
+ * For instance, suppose that we encode a value using 8 bits.
+ * Then 5 = 101 becomes 00-101 (2 bits unary prefix, 3 bits content) instead of 00000101 (5 bits to fill up 8 bits, 3 bits of content), so we gain 3 bits.
+ * Similarly, 22 = 10110 becomes 0000-10110 instead of 00010110: Now we lose 1 bit.
+ *
+ * This avoids overhead for small values and allows for arbitrarily large values, avoiding an upper bound.
+ * However, it doubles the size of moderately large values.
+ */
+function unaryCodedLength (i) {
+	var n = 0;
+	while (i > 0) {
+		i = Math.floor (i / 2);
+		n++;
+	}
+	return 2 * n - 1;
 }
 
-function toUtf8 (text) {
-	var utf8 = unescape (encodeURIComponent (text));
-	return utf8;
+function refresh () {
+	/*
+	 * text and encoding
+	 */
+	var text = $ ('#input').val ();
+	var showBits = $ ('#showBits').prop ('checked');
+	var encodeUtf8 = $ ('#encodeUtf8').prop ('checked');
+
+	/*
+	 * convert text to Utf8
+	 */
+	var litRawBits;
+	if (encodeUtf8) {
+		text = toUtf8 (text);
+		litRawBits = 8;
+	} else {
+		litRawBits = 16;
+	}
+
+	/*
+	 * Literals are always encoded regularly
+	 */
+	var litBits = litRawBits + 1;
+
+	if (varLen) {
+		/*
+		 * References are variable-length-encoded and depend on the actual values
+		 */
+		var refBits = function (offset, len) {
+			return 1 + unaryCodedLength (offset) + unaryCodedLength (len);
+		};
+
+		var pickBetter = function (option, best) {
+			var so = option.textBits - option.bits;
+			var sb = best.textBits - best.bits;
+			return so > sb ? option : best;
+		};
+
+		/*
+		 * We're not actually bounded by fixed values, so just set the bounds to very large values.
+		 */
+		var maxMatchLength = 1 << 30;
+		var dictSize = 1 << 30;
+
+	}
+	else {
+		/*
+		 * References use fixed length
+		 */
+		var dictSizeBits = parseInt ($ ('#offsetBits').val ());
+		var matchSizeBits = parseInt ($ ('#lengthBits').val ());
+		var refBits = function (offset, len) {
+			return 1 + dictSizeBits + matchSizeBits;
+		};
+
+		/*
+		 * Select minimal match length
+		 */
+		var computedMinMatchLength = Math.ceil ((refBits + 1) / litBits);
+		$ ('#minLength').attr ("min", computedMinMatchLength);
+
+		var minMatchLength = parseInt ($ ('#minLength').val ());
+		if (minMatchLength < computedMinMatchLength) {
+			minMatchLength = computedMinMatchLength;
+			$ ('#minLength').val (computedMinMatchLength);
+		}
+
+		var dictSize = 1 << dictSizeBits;
+		var maxMatchLength = matchSizeBits == 0
+			? 0
+			: 1 << matchSizeBits;
+		maxMatchLength += minMatchLength;
+
+		var pickBetter = function (option, best) {
+			if (option.len < minMatchLength) {
+				return best;
+			}
+			return option.len > best.len ? option : best;
+		};
+
+		/*
+		 * Display resulting characteristics
+		 */
+		$ ('#refSizeInfo').text (""
+			+ "A reference will take "
+			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
+			+ refBits + " bits.");
+		$ ('#litSizeInfo').text (""
+			+ "A literal will take "
+			+ "1 + " + litRawBits + " = "
+			+ litBits + " bits.");
+		$ ('#dictRange').text ("1 to " + dictSize);
+		$ ('#matchRange').text (minMatchLength + " to " + maxMatchLength);
+	}
+
+	/*
+	 * compress
+	 */
+	var lzss = [];
+	var cursor = 0;
+	var index = 0;
+
+	while (cursor < text.length) {
+		/*
+		 * Our basic option is inserting a literal.
+		 */
+		var best = {
+			lit: true,
+			len: 1,
+			bits: litBits,
+			text: text[cursor],
+			textBits: litBits,
+			offset: null,
+
+			pos: cursor,
+			index: index,
+			referenced: [],
+		};
+
+		/*
+		 * Let's see if there is a reference that's better.
+		 */
+		for (var offset = 1; offset <= dictSize && cursor - offset >= 0; offset++) {
+			var len = 0;
+			while (true
+			&& (cursor + len < text.length)
+			&& (len < maxMatchLength)
+			&& (text[cursor - offset + len] == text[cursor + len])
+				) {
+				len++;
+			}
+
+			var match = text.substr (cursor - offset, len);
+			var option = {
+				lit: false,
+				len: len,
+				bits: refBits (offset, len),
+				text: match,
+				textBits: litBits * len,
+				offset: offset,
+
+				pos: cursor,
+				index: index,
+				referenced: [],
+			};
+
+			best = pickBetter (option, best);
+		}
+
+		/*
+		 * We selected a way to insert some text. Append it and advance the cursor appropriately.
+		 */
+		lzss.push (best);
+		index++;
+		cursor += best.len;
+	}
+	text = null;
+	cursor = null;
+	
+	includeSpanReferences (lzss);
+
+	render (lzss, showBits);
+}
+
+function includeSpanReferences (lzss) {
+	/*
+	 * Function to find element index for position.
+	 * Could use a lookup table or binary search, too.
+	 */
+	function findBlockAtPosition (pos, maxIndex) {
+		for (var spanindex = maxIndex; spanindex >= 0; spanindex--) {
+			var span = lzss[spanindex];
+			if (span.pos <= pos) {
+				//console.log ("block " + spanindex + " covers " + span.pos + " to " + (span.pos + span.len - 1));
+				return span;
+			}
+		}
+	}
+
+	/*
+	 * Let referenced elements link to their sources.
+	 */
+	for (var i = 0; i < lzss.length; i++) {
+		var it = lzss[i];
+		if (it.lit) {
+			continue;
+		}
+
+		var searchBeg = it.pos - it.offset;
+		var searchEnd = searchBeg + it.len - 1;
+		var end = findBlockAtPosition (searchEnd, it.index);
+		var beg = findBlockAtPosition (searchBeg, end.index);
+
+		for (var spanindex = beg.index; spanindex <= end.index; spanindex++) {
+			var span = lzss[spanindex];
+			var off0 = span == beg ? searchBeg - beg.pos : 0;
+			var off1 = span == end ? searchEnd - end.pos : span.len - 1;
+			var covered = [off0, off1, i];
+			//console.log ("lzss " + i + " references " + spanindex + " with range " + covered);
+			span.referenced.push (covered);
+		}
+	}
 }
