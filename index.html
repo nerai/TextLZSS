@@ -76,28 +76,18 @@
 						Referencing a too small match would take more space than including it as a literal would.
 					</td>
 				</tr>
-				<tr>
-					<td colspan="3">
-						<div>Resulting offset range: <span id="dictRange"></span></div>
-						<div>Resulting length range: <span id="matchRange"></span></div>
-					</td>
-				</tr>
 			</table>
+		</div>
 
-			<div class="advanced">
-				<div id="refSizeInfo"></div>
-				<div id="litSizeInfo"></div>
+		<div id="sizeInfo"></div>
 
-				<h4>Encoding options</h4>
-				<label for="showBits">Display required bits</label>
-				<input type="checkbox" id="showBits" name="showBits">
-				<br>
-				<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
-				<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
-			</div>
+		<div>
+			<h4>Encoding options</h4>
+			<label for="showBits">Display required bits</label>
+			<input type="checkbox" id="showBits" name="showBits">
 			<br>
-
-			<div class="button" id="enableAdvanced">Display some complicated and boring technical stuff<br></div>
+			<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
+			<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
 		</div>
 
 		<div>
@@ -105,16 +95,13 @@
 			<div class="button" id="setAaca">Aaca</div>
 			<div class="button" id="setDova">Dovahkiin</div>
 			<div class="button" id="setAlice">Alice in Wonderland</div>
-			<div class="button" id="setPowers">Powers of 2</div>
-			<div class="advanced">
-				<div class="button" id="setPi">Digits of Pi</div>
-				<div class="button" id="setRandom">Random</div>
-				<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
-			</div>
+			<div class="button" id="setPi">Digits of Pi</div>
+			<div class="button" id="setRandom">Random</div>
+			<div class="button" id="setUnicodeHi">Unicode and surrogates</div>
 		</div>
 	</div>
 
-	<textarea id="input">Type here. Your text will be compressed using LZSS (a common compression algorithm).</textarea>
+	<textarea id="input">Type here. Your text will be compressed using the LZSS compression algorithm.</textarea>
 	<br>
 
 	<div id="output" class="lzout"></div>

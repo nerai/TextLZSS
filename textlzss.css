@@ -98,3 +98,13 @@ td {
 h4 {
 	margin-bottom: 0;
 }
+
+#varSizeInfo table {
+	text-align: center;
+	border-collapse: collapse;
+}
+
+#varSizeInfo th, #varSizeInfo td {
+	padding: 0.3em;
+	border: 1px solid black;
+}

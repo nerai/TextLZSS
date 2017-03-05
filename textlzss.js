@@ -37,10 +37,6 @@ Wah dein vokul mahfaeraak ahst vaal!
 Ahrk fin norok paal graan fod nust hon zindro zaan
 Dovahkiin, fah hin kogaan mu draal!`;
 	var Alice = `Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'`;
-	var Powers = "";
-	for (var i = 0; i < 31; i++) {
-		Powers += (1 << i);
-	}
 	var Pi = `3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927876611195909216420198`;
 	var Random = "";
 	for (var i = 0; i < 1000; i++) {
@@ -65,10 +61,6 @@ Dovahkiin, fah hin kogaan mu draal!`;
 	});
 	$ ("#setAlice").click (function () {
 		$ ('#input').val (Alice);
-		refresh ();
-	});
-	$ ("#setPowers").click (function () {
-		$ ('#input').val (Powers);
 		refresh ();
 	});
 	$ ("#setPi").click (function () {
@@ -122,11 +114,6 @@ $ (function () {
 
 	$ ("#showBits").change (refresh);
 	$ ("#encodeUtf8").change (refresh);
-
-	$ ("#enableAdvanced").click (function () {
-		$ (".advanced").toggleClass ('advanced');
-		$ ("#enableAdvanced").remove ();
-	});
 });
 
 
@@ -268,6 +255,37 @@ function refresh () {
 		var maxMatchLength = 1 << 30;
 		var dictSize = 1 << 30;
 
+		/*
+		 * Display resulting characteristics
+		 */
+		var s = "<div id='varSizeInfo'>"
+			+ "<table>"
+			+ "<tr><th colspan='2' rowspan='2'>Bits</th>"
+			+ "<th colspan='4'>Length</th>"
+			+ "</tr>"
+			+ "<tr>"
+			+ "<th>1</th>"
+			+ "<th>2-3</th>"
+			+ "<th>4-7</th>"
+			+ "<th>8-15</th>"
+			+ "</tr>";
+		for (var i = 1; i <= 32; i *= 2) {
+			s += "<tr>";
+			if (i == 1) {
+				s += "<th rowspan='6'>Offset</th>"
+					+ "<th>1</th>";
+			} else {
+				s += ""
+					+ "<th>" + i + " - " + (2 * i - 1) + "</th>";
+			}
+			s += "<td>" + refBits (i, 1) + "</td>"
+				+ "<td>" + refBits (i, 2) + "</td>"
+				+ "<td>" + refBits (i, 4) + "</td>"
+				+ "<td>" + refBits (i, 8) + "</td>";
+			s += "</tr>";
+		}
+		s += "</table></div>";
+		$ ('#sizeInfo').html (s);
 	}
 	else {
 		/*
@@ -307,16 +325,15 @@ function refresh () {
 		/*
 		 * Display resulting characteristics
 		 */
-		$ ('#refSizeInfo').text (""
-			+ "A reference will take "
-			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-			+ refBits + " bits.");
-		$ ('#litSizeInfo').text (""
+		$ ('#sizeInfo').html (""
 			+ "A literal will take "
 			+ "1 + " + litRawBits + " = "
-			+ litBits + " bits.");
-		$ ('#dictRange').text ("1 to " + dictSize);
-		$ ('#matchRange').text (minMatchLength + " to " + maxMatchLength);
+			+ litBits + " bits.<br>"
+			+ "A reference will take "
+			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
+			+ (1 + dictSizeBits + matchSizeBits) + " bits, "
+			+ "resulting in an offset range from 1 to " + dictSize
+			+ " and a length range from " + minMatchLength + " to " + maxMatchLength + ".");
 	}
 
 	/*
@@ -382,7 +399,7 @@ function refresh () {
 	}
 	text = null;
 	cursor = null;
-	
+
 	includeSpanReferences (lzss);
 
 	render (lzss, showBits);
