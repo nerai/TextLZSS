@@ -302,16 +302,15 @@ function refresh () {
 		/*
 		 * Display resulting characteristics
 		 */
-		$ ('#refSizeInfo').text (""
-			+ "A reference will take "
-			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-			+ (1 + dictSizeBits + matchSizeBits) + " bits.");
-		$ ('#litSizeInfo').text (""
+		$ ('#sizeInfo').html (""
 			+ "A literal will take "
 			+ "1 + " + litRawBits + " = "
-			+ litBits + " bits.");
-		$ ('#dictRange').text ("1 to " + dictSize);
-		$ ('#matchRange').text (minMatchLength + " to " + maxMatchLength);
+			+ litBits + " bits.<br>"
+			+ "A reference will take "
+			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
+			+ (1 + dictSizeBits + matchSizeBits) + " bits, "
+			+ "resulting in an offset range from 1 to " + dictSize
+			+ " and a length range from " + minMatchLength + " to " + maxMatchLength + ".");
 	}
 
 	/*
