@@ -1,3 +1,4 @@
+'use strict';
 
 $ (function () {
 	var Aaca = `aacaacabcabaaac`;
@@ -84,6 +85,8 @@ Dovahkiin, fah hin kogaan mu draal!`;
 	});
 });
 
+var varLen = false;
+
 $ (function () {
 	refresh ();
 
@@ -97,9 +100,26 @@ $ (function () {
 	}
 
 	$ ("#input").on ('input', refresh);
+
+	$ ("#btnLengthFixed").click (function () {
+		$ ('.toggler').removeClass ('toggled');
+		$ (this).addClass ('toggled');
+		varLen = false;
+		$ ('#fixedRefLengthOptions').show ();
+		refresh ();
+	});
+	$ ("#btnLengthUnary").click (function () {
+		$ ('.toggler').removeClass ('toggled');
+		$ (this).addClass ('toggled');
+		varLen = true;
+		$ ('#fixedRefLengthOptions').hide ();
+		refresh ();
+	});
+
 	$ ("#offsetBits").change (numericInput);
 	$ ("#lengthBits").change (numericInput);
 	$ ("#minLength").change (numericInput);
+
 	$ ("#showBits").change (refresh);
 	$ ("#encodeUtf8").change (refresh);
 
@@ -185,6 +205,25 @@ function render (lzss, showBits) {
 			.appendTo ('#output');
 	}
 }
+
+/*
+ * Length of a variable length encoded integer. Encoding is done via prefixing with its length minus 1 in unary.
+ * For instance, suppose that we encode a value using 8 bits.
+ * Then 5 = 101 becomes 00-101 (2 bits unary prefix, 3 bits content) instead of 00000101 (5 bits to fill up 8 bits, 3 bits of content), so we gain 3 bits.
+ * Similarly, 22 = 10110 becomes 0000-10110 instead of 00010110: Now we lose 1 bit.
+ *
+ * This avoids overhead for small values and allows for arbitrarily large values, avoiding an upper bound.
+ * However, it doubles the size of moderately large values.
+ */
+function unaryCodedLength (i) {
+	var n = 0;
+	while (i > 0) {
+		i = Math.floor (i / 2);
+		n++;
+	}
+	return 2 * n - 1;
+}
+
 function refresh () {
 	/*
 	 * text and encoding
@@ -203,40 +242,82 @@ function refresh () {
 	} else {
 		litRawBits = 16;
 	}
-	var litBits = litRawBits + 1;
 
 	/*
-	 * offset and length
+	 * Literals are always encoded regularly
 	 */
-	var dictSizeBits = parseInt ($ ('#offsetBits').val ());
-	var matchSizeBits = parseInt ($ ('#lengthBits').val ());
-	var refBits = 1 + dictSizeBits + matchSizeBits;
+	var litBits = litRawBits + 1;
 
-	var computedMinMatchLength = Math.ceil ((refBits + 1) / litBits);
-	$ ('#minLength').attr ("min", computedMinMatchLength);
+	if (varLen) {
+		/*
+		 * References are variable-length-encoded and depend on the actual values
+		 */
+		var refBits = function (offset, len) {
+			return 1 + unaryCodedLength (offset) + unaryCodedLength (len);
+		};
 
-	var minMatchLength = parseInt ($ ('#minLength').val ());
-	if (minMatchLength < computedMinMatchLength) {
-		minMatchLength = computedMinMatchLength;
-		$ ('#minLength').val (computedMinMatchLength);
+		var pickBetter = function (option, best) {
+			var so = option.textBits - option.bits;
+			var sb = best.textBits - best.bits;
+			return so > sb ? option : best;
+		};
+
+		/*
+		 * We're not actually bounded by fixed values, so just set the bounds to very large values.
+		 */
+		var maxMatchLength = 1 << 30;
+		var dictSize = 1 << 30;
+
 	}
+	else {
+		/*
+		 * References use fixed length
+		 */
+		var dictSizeBits = parseInt ($ ('#offsetBits').val ());
+		var matchSizeBits = parseInt ($ ('#lengthBits').val ());
+		var refBits = function (offset, len) {
+			return 1 + dictSizeBits + matchSizeBits;
+		};
 
-	var dictSize = 1 << dictSizeBits;
+		/*
+		 * Select minimal match length
+		 */
+		var computedMinMatchLength = Math.ceil ((refBits + 1) / litBits);
+		$ ('#minLength').attr ("min", computedMinMatchLength);
+
+		var minMatchLength = parseInt ($ ('#minLength').val ());
+		if (minMatchLength < computedMinMatchLength) {
+			minMatchLength = computedMinMatchLength;
+			$ ('#minLength').val (computedMinMatchLength);
+		}
+
+		var dictSize = 1 << dictSizeBits;
 		var maxMatchLength = matchSizeBits == 0
-		? 0
-		: 1 << matchSizeBits;
+			? 0
+			: 1 << matchSizeBits;
 		maxMatchLength += minMatchLength;
 
-	$ ('#refSizeInfo').text (""
-		+ "A reference will take "
-		+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-		+ refBits + " bits.");
-	$ ('#litSizeInfo').text (""
-		+ "A literal will take "
-		+ "1 + " + litRawBits + " = "
-		+ litBits + " bits.");
-	$ ('#dictRange').text ("1 to " + dictSize);
+		var pickBetter = function (option, best) {
+			if (option.len < minMatchLength) {
+				return best;
+			}
+			return option.len > best.len ? option : best;
+		};
+
+		/*
+		 * Display resulting characteristics
+		 */
+		$ ('#refSizeInfo').text (""
+			+ "A reference will take "
+			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
+			+ refBits + " bits.");
+		$ ('#litSizeInfo').text (""
+			+ "A literal will take "
+			+ "1 + " + litRawBits + " = "
+			+ litBits + " bits.");
+		$ ('#dictRange').text ("1 to " + dictSize);
 		$ ('#matchRange').text (minMatchLength + " to " + maxMatchLength);
+	}
 
 	/*
 	 * compress
@@ -244,10 +325,27 @@ function refresh () {
 	var lzss = [];
 	var cursor = 0;
 	var index = 0;
-	while (cursor < text.length) {
-		var bestOffset = 0;
-		var bestLen = 0;
 
+	while (cursor < text.length) {
+		/*
+		 * Our basic option is inserting a literal.
+		 */
+		var best = {
+			lit: true,
+			len: 1,
+			bits: litBits,
+			text: text[cursor],
+			textBits: litBits,
+			offset: null,
+
+			pos: cursor,
+			index: index,
+			referenced: [],
+		};
+
+		/*
+		 * Let's see if there is a reference that's better.
+		 */
 		for (var offset = 1; offset <= dictSize && cursor - offset >= 0; offset++) {
 			var len = 0;
 			while (true
@@ -257,40 +355,40 @@ function refresh () {
 				) {
 				len++;
 			}
-			if (len > bestLen) {
-				bestLen = len;
-				bestOffset = offset;
-			}
+
+			var match = text.substr (cursor - offset, len);
+			var option = {
+				lit: false,
+				len: len,
+				bits: refBits (offset, len),
+				text: match,
+				textBits: litBits * len,
+				offset: offset,
+
+				pos: cursor,
+				index: index,
+				referenced: [],
+			};
+
+			best = pickBetter (option, best);
 		}
 
-		var it = {
-			pos: cursor,
-			index: index,
-			referenced: [],
-		};
-
-		if (bestLen < minMatchLength) {
-			it.text = text[cursor];
-			it.lit = true;
-			it.bits = litBits;
-			it.len = 1;
-			cursor++;
-		}
-		else {
-			it.text = text.substr (cursor - bestOffset, bestLen);
-			it.lit = false;
-			it.bits = refBits;
-			it.offset = bestOffset;
-			it.len = bestLen;
-			cursor += bestLen;
-		}
-
-		lzss.push (it);
+		/*
+		 * We selected a way to insert some text. Append it and advance the cursor appropriately.
+		 */
+		lzss.push (best);
 		index++;
+		cursor += best.len;
 	}
 	text = null;
 	cursor = null;
+	
+	includeSpanReferences (lzss);
 
+	render (lzss, showBits);
+}
+
+function includeSpanReferences (lzss) {
 	/*
 	 * Function to find element index for position.
 	 * Could use a lookup table or binary search, too.
@@ -328,6 +426,4 @@ function refresh () {
 			span.referenced.push (covered);
 		}
 	}
-
-	render (lzss, showBits);
 }

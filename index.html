@@ -24,72 +24,81 @@
 
 	<div class="left">
 		<h4>Reference options</h4>
-		<table>
-			<tr>
-				<td>
-					<label for="offsetBits">Offset bits</label>
-				</td>
-				<td>
-					<input type="number" id="offsetBits" name="offsetBits"
-					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="7" min="0" max="16" ;>
-				</td>
-				<td>
-					Defines how many bits are used to to store the match offset.
-					This effectively controls the <span style="font-style: italic">dictionary size</span>.
-					Larger values allow references from further away.
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<label for="lengthBits">Length bits</label>
-				</td>
-				<td>
-					<input type="number" id="lengthBits" name="lengthBits"
-					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="4" min="0" max="16" ;>
-				</td>
-				<td>
-					Controls how many bits are used to store the length of a match.
-					Larger values allow for referencing larger chunks.
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<label for="minLength">Min length</label>
-				</td>
-				<td>
-					<input type="number" id="minLength" name="minLength"
-					       style="width: 4em; font-size: 1em; text-align: center"
-					       value="3" min="0" max="10" ;>
-				</td>
-				<td>
-					The minimum match length ensures that only sufficiently large matches will be used.
-					Referencing a too small match would take more space than including it as a literal would.
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3">
-					<div>Resulting offset range: <span id="dictRange"></span></div>
-					<div>Resulting length range: <span id="matchRange"></span></div>
-				</td>
-			</tr>
-		</table>
 
-		<div class="advanced">
-			<div id="refSizeInfo"></div>
-			<div id="litSizeInfo"></div>
-
-			<h4>Encoding options</h4>
-			<label for="showBits">Display required bits</label>
-			<input type="checkbox" id="showBits" name="showBits">
-			<br>
-			<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
-			<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
+		<div>
+			Reference length:
+			<div id="btnLengthFixed" class="toggler toggled">Static (fixed number of bits)</div>
+			<div id="btnLengthUnary" class="toggler">Dynamic (variable length with unary encoded log prefix)</div>
 		</div>
-		<br>
 
-		<div class="button" id="enableAdvanced">Display some complicated and boring technical stuff<br></div>
+		<div id="fixedRefLengthOptions">
+			<table>
+				<tr>
+					<td>
+						<label for="offsetBits">Offset bits</label>
+					</td>
+					<td>
+						<input type="number" id="offsetBits" name="offsetBits"
+						       style="width: 4em; font-size: 1em; text-align: center"
+						       value="7" min="0" max="16" ;>
+					</td>
+					<td>
+						Defines how many bits are used to to store the match offset.
+						This effectively controls the <span style="font-style: italic">dictionary size</span>.
+						Larger values allow references from further away.
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="lengthBits">Length bits</label>
+					</td>
+					<td>
+						<input type="number" id="lengthBits" name="lengthBits"
+						       style="width: 4em; font-size: 1em; text-align: center"
+						       value="4" min="0" max="16" ;>
+					</td>
+					<td>
+						Controls how many bits are used to store the length of a match.
+						Larger values allow for referencing larger chunks.
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label for="minLength">Min length</label>
+					</td>
+					<td>
+						<input type="number" id="minLength" name="minLength"
+						       style="width: 4em; font-size: 1em; text-align: center"
+						       value="3" min="0" max="10" ;>
+					</td>
+					<td>
+						The minimum match length ensures that only sufficiently large matches will be used.
+						Referencing a too small match would take more space than including it as a literal would.
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<div>Resulting offset range: <span id="dictRange"></span></div>
+						<div>Resulting length range: <span id="matchRange"></span></div>
+					</td>
+				</tr>
+			</table>
+
+			<div class="advanced">
+				<div id="refSizeInfo"></div>
+				<div id="litSizeInfo"></div>
+
+				<h4>Encoding options</h4>
+				<label for="showBits">Display required bits</label>
+				<input type="checkbox" id="showBits" name="showBits">
+				<br>
+				<label for="encodeUtf8">Encode literals as UTF-8 (instead of UTF-16)</label>
+				<input type="checkbox" id="encodeUtf8" name="encodeUtf8" checked>
+			</div>
+			<br>
+
+			<div class="button" id="enableAdvanced">Display some complicated and boring technical stuff<br></div>
+		</div>
 
 		<div>
 			<h4>Examples</h4>
