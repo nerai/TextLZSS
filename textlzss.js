@@ -127,8 +127,12 @@ function prepareLzItem (s) {
 }
 
 function toUtf8 (text) {
-	var utf8 = unescape (encodeURIComponent (text));
-	return utf8;
+	/*
+	 * First, encode text as URI (using UTF-8 symbols exclusively).
+	 * Then, directly revert the encoding on byte-basis instead of character basis.
+	 */
+	// noinspection JSDeprecatedSymbols
+	return unescape (encodeURIComponent (text));
 }
 
 function render (lzss, showBits) {
@@ -136,10 +140,11 @@ function render (lzss, showBits) {
 	 * Function to highlight referenced letters.
 	 */
 	var mouseRefNode = function (entering, i) {
+		var affected = $ ("#output .refby-" + i);
 		if (entering) {
-			$ ("#output .refby-" + i).addClass ('activeRefSource');
+			affected.addClass ('activeRefSource');
 		} else {
-			$ ("#output .refby-" + i).removeClass ('activeRefSource');
+			affected.removeClass ('activeRefSource');
 		}
 	};
 
@@ -234,16 +239,20 @@ function refresh () {
 	 * Literals are always encoded regularly
 	 */
 	var litBits = litRawBits + 1;
+	var maxMatchLength;
+	var dictSize;
+	var refBits;
+	var pickBetter;
 
 	if (varLen) {
 		/*
 		 * References are variable-length-encoded and depend on the actual values
 		 */
-		var refBits = function (offset, len) {
+		refBits = function (offset, len) {
 			return 1 + unaryCodedLength (offset) + unaryCodedLength (len);
 		};
 
-		var pickBetter = function (option, best) {
+		pickBetter = function (option, best) {
 			var so = option.textBits - option.bits;
 			var sb = best.textBits - best.bits;
 			return so > sb ? option : best;
@@ -252,8 +261,8 @@ function refresh () {
 		/*
 		 * We're not actually bounded by fixed values, so just set the bounds to very large values.
 		 */
-		var maxMatchLength = 1 << 30;
-		var dictSize = 1 << 30;
+		maxMatchLength = 1 << 30;
+		dictSize = 1 << 30;
 
 		/*
 		 * Display resulting characteristics
@@ -293,7 +302,7 @@ function refresh () {
 		 */
 		var dictSizeBits = parseInt ($ ('#offsetBits').val ());
 		var matchSizeBits = parseInt ($ ('#lengthBits').val ());
-		var refBits = function (offset, len) {
+		refBits = function (offset, len) {
 			return 1 + dictSizeBits + matchSizeBits;
 		};
 
@@ -309,13 +318,13 @@ function refresh () {
 			$ ('#minLength').val (computedMinMatchLength);
 		}
 
-		var dictSize = 1 << dictSizeBits;
-		var maxMatchLength = matchSizeBits == 0
+		dictSize = 1 << dictSizeBits;
+		maxMatchLength = matchSizeBits == 0
 			? 0
 			: 1 << matchSizeBits;
 		maxMatchLength += minMatchLength;
 
-		var pickBetter = function (option, best) {
+		pickBetter = function (option, best) {
 			if (option.len < minMatchLength) {
 				return best;
 			}
