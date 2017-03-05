@@ -255,6 +255,37 @@ function refresh () {
 		var maxMatchLength = 1 << 30;
 		var dictSize = 1 << 30;
 
+		/*
+		 * Display resulting characteristics
+		 */
+		var s = "<div id='varSizeInfo'>"
+			+ "<table>"
+			+ "<tr><th colspan='2' rowspan='2'>Bits</th>"
+			+ "<th colspan='4'>Length</th>"
+			+ "</tr>"
+			+ "<tr>"
+			+ "<th>1</th>"
+			+ "<th>2-3</th>"
+			+ "<th>4-7</th>"
+			+ "<th>8-15</th>"
+			+ "</tr>";
+		for (var i = 1; i <= 32; i *= 2) {
+			s += "<tr>";
+			if (i == 1) {
+				s += "<th rowspan='6'>Offset</th>"
+					+ "<th>1</th>";
+			} else {
+				s += ""
+					+ "<th>" + i + " - " + (2 * i - 1) + "</th>";
+			}
+			s += "<td>" + refBits (i, 1) + "</td>"
+				+ "<td>" + refBits (i, 2) + "</td>"
+				+ "<td>" + refBits (i, 4) + "</td>"
+				+ "<td>" + refBits (i, 8) + "</td>";
+			s += "</tr>";
+		}
+		s += "</table></div>";
+		$ ('#sizeInfo').html (s);
 	}
 	else {
 		/*
