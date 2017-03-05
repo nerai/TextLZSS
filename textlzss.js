@@ -305,7 +305,7 @@ function refresh () {
 		$ ('#refSizeInfo').text (""
 			+ "A reference will take "
 			+ "1 + " + dictSizeBits + " + " + matchSizeBits + " = "
-			+ refBits + " bits.");
+			+ (1 + dictSizeBits + matchSizeBits) + " bits.");
 		$ ('#litSizeInfo').text (""
 			+ "A literal will take "
 			+ "1 + " + litRawBits + " = "
@@ -377,7 +377,7 @@ function refresh () {
 	}
 	text = null;
 	cursor = null;
-	
+
 	includeSpanReferences (lzss);
 
 	render (lzss, showBits);
