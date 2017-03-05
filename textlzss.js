@@ -122,11 +122,6 @@ $ (function () {
 
 	$ ("#showBits").change (refresh);
 	$ ("#encodeUtf8").change (refresh);
-
-	$ ("#enableAdvanced").click (function () {
-		$ (".advanced").toggleClass ('advanced');
-		$ ("#enableAdvanced").remove ();
-	});
 });
 
 
