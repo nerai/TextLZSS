@@ -269,31 +269,35 @@ function refresh () {
 		 */
 		var s = "<div id='varSizeInfo'>"
 			+ "<table>"
-			+ "<tr><th colspan='2' rowspan='2'>Bits</th>"
-			+ "<th colspan='4'>Length</th>"
+			+ "<tr><th colspan='2' rowspan='2'>Required bits</th>"
+			+ "<th colspan='8'>Length</th>"
 			+ "</tr>"
 			+ "<tr>"
 			+ "<th>1</th>"
-			+ "<th>2-3</th>"
-			+ "<th>4-7</th>"
-			+ "<th>8-15</th>"
+			+ "<th>2 - 3</th>"
+			+ "<th>4 - 7</th>"
+			+ "<th>8 - 15</th>"
+			+ "<th>16 - 31</th>"
+			+ "<th>...</th>"
 			+ "</tr>";
-		for (var i = 1; i <= 32; i *= 2) {
+		for (var i = 1; i <= 16; i *= 2) {
 			s += "<tr>";
 			if (i == 1) {
-				s += "<th rowspan='6'>Offset</th>"
+				s += "<th rowspan='7'>Offset</th>"
 					+ "<th>1</th>";
 			} else {
 				s += ""
 					+ "<th>" + i + " - " + (2 * i - 1) + "</th>";
 			}
-			s += "<td>" + refBits (i, 1) + "</td>"
-				+ "<td>" + refBits (i, 2) + "</td>"
-				+ "<td>" + refBits (i, 4) + "</td>"
-				+ "<td>" + refBits (i, 8) + "</td>";
+			for (var j = 1; j <= 16; j *= 2) {
+				s += "<td>" + refBits (i, j) + "</td>";
+			}
 			s += "</tr>";
 		}
-		s += "</table></div>";
+		s += "<tr><td>...</td></tr>";
+		s += "</table>";
+		s += "<p>For instance, in 'A large fox is large.' the reference to '·large' has offset 13 and length 6, so it takes " + refBits (13, 6) + " bits.</p>";
+		s += "</div>";
 		$ ('#sizeInfo').html (s);
 	}
 	else {
