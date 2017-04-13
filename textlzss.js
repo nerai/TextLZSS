@@ -127,8 +127,12 @@ function prepareLzItem (s) {
 }
 
 function toUtf8 (text) {
-	var utf8 = unescape (encodeURIComponent (text));
-	return utf8;
+	/*
+	 * First, encode text as URI (using UTF-8 symbols exclusively).
+	 * Then, directly revert the encoding on byte-basis instead of character basis.
+	 */
+	// noinspection JSDeprecatedSymbols
+	return unescape (encodeURIComponent (text));
 }
 
 function render (lzss, showBits) {
@@ -136,10 +140,11 @@ function render (lzss, showBits) {
 	 * Function to highlight referenced letters.
 	 */
 	var mouseRefNode = function (entering, i) {
+		var affected = $ ("#output .refby-" + i);
 		if (entering) {
-			$ ("#output .refby-" + i).addClass ('activeRefSource');
+			affected.addClass ('activeRefSource');
 		} else {
-			$ ("#output .refby-" + i).removeClass ('activeRefSource');
+			affected.removeClass ('activeRefSource');
 		}
 	};
 
@@ -234,16 +239,20 @@ function refresh () {
 	 * Literals are always encoded regularly
 	 */
 	var litBits = litRawBits + 1;
+	var maxMatchLength;
+	var dictSize;
+	var refBits;
+	var pickBetter;
 
 	if (varLen) {
 		/*
 		 * References are variable-length-encoded and depend on the actual values
 		 */
-		var refBits = function (offset, len) {
+		refBits = function (offset, len) {
 			return 1 + unaryCodedLength (offset) + unaryCodedLength (len);
 		};
 
-		var pickBetter = function (option, best) {
+		pickBetter = function (option, best) {
 			var so = option.textBits - option.bits;
 			var sb = best.textBits - best.bits;
 			return so > sb ? option : best;
@@ -252,39 +261,43 @@ function refresh () {
 		/*
 		 * We're not actually bounded by fixed values, so just set the bounds to very large values.
 		 */
-		var maxMatchLength = 1 << 30;
-		var dictSize = 1 << 30;
+		maxMatchLength = 1 << 30;
+		dictSize = 1 << 30;
 
 		/*
 		 * Display resulting characteristics
 		 */
 		var s = "<div id='varSizeInfo'>"
 			+ "<table>"
-			+ "<tr><th colspan='2' rowspan='2'>Bits</th>"
-			+ "<th colspan='4'>Length</th>"
+			+ "<tr><th colspan='2' rowspan='2'>Required bits</th>"
+			+ "<th colspan='8'>Length</th>"
 			+ "</tr>"
 			+ "<tr>"
 			+ "<th>1</th>"
-			+ "<th>2-3</th>"
-			+ "<th>4-7</th>"
-			+ "<th>8-15</th>"
+			+ "<th>2 - 3</th>"
+			+ "<th>4 - 7</th>"
+			+ "<th>8 - 15</th>"
+			+ "<th>16 - 31</th>"
+			+ "<th>...</th>"
 			+ "</tr>";
-		for (var i = 1; i <= 32; i *= 2) {
+		for (var i = 1; i <= 16; i *= 2) {
 			s += "<tr>";
 			if (i == 1) {
-				s += "<th rowspan='6'>Offset</th>"
+				s += "<th rowspan='7'>Offset</th>"
 					+ "<th>1</th>";
 			} else {
 				s += ""
 					+ "<th>" + i + " - " + (2 * i - 1) + "</th>";
 			}
-			s += "<td>" + refBits (i, 1) + "</td>"
-				+ "<td>" + refBits (i, 2) + "</td>"
-				+ "<td>" + refBits (i, 4) + "</td>"
-				+ "<td>" + refBits (i, 8) + "</td>";
+			for (var j = 1; j <= 16; j *= 2) {
+				s += "<td>" + refBits (i, j) + "</td>";
+			}
 			s += "</tr>";
 		}
-		s += "</table></div>";
+		s += "<tr><td>...</td></tr>";
+		s += "</table>";
+		s += "<p>For instance, in 'A large fox is large.' the reference to '·large' has offset 13 and length 6, so it takes " + refBits (13, 6) + " bits.</p>";
+		s += "</div>";
 		$ ('#sizeInfo').html (s);
 	}
 	else {
@@ -293,7 +306,7 @@ function refresh () {
 		 */
 		var dictSizeBits = parseInt ($ ('#offsetBits').val ());
 		var matchSizeBits = parseInt ($ ('#lengthBits').val ());
-		var refBits = function (offset, len) {
+		refBits = function (offset, len) {
 			return 1 + dictSizeBits + matchSizeBits;
 		};
 
@@ -309,13 +322,13 @@ function refresh () {
 			$ ('#minLength').val (computedMinMatchLength);
 		}
 
-		var dictSize = 1 << dictSizeBits;
-		var maxMatchLength = matchSizeBits == 0
+		dictSize = 1 << dictSizeBits;
+		maxMatchLength = matchSizeBits == 0
 			? 0
 			: 1 << matchSizeBits;
 		maxMatchLength += minMatchLength;
 
-		var pickBetter = function (option, best) {
+		pickBetter = function (option, best) {
 			if (option.len < minMatchLength) {
 				return best;
 			}
