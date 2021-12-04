@@ -323,10 +323,7 @@ function refresh () {
 		}
 
 		dictSize = 1 << dictSizeBits;
-		maxMatchLength = matchSizeBits == 0
-			? 0
-			: 1 << matchSizeBits;
-		maxMatchLength += minMatchLength;
+		maxMatchLength = minMatchLength + (1 << matchSizeBits) - 1;
 
 		pickBetter = function (option, best) {
 			if (option.len < minMatchLength) {
@@ -380,7 +377,7 @@ function refresh () {
 			var len = 0;
 			while (true
 			&& (cursor + len < text.length)
-			&& (len < maxMatchLength)
+			&& (len <= maxMatchLength)
 			&& (text[cursor - offset + len] == text[cursor + len])
 				) {
 				len++;
