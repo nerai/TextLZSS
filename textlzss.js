@@ -377,7 +377,7 @@ function refresh () {
 			var len = 0;
 			while (true
 			&& (cursor + len < text.length)
-			&& (len <= maxMatchLength)
+			&& (len < maxMatchLength)
 			&& (text[cursor - offset + len] == text[cursor + len])
 				) {
 				len++;
