@@ -122,8 +122,8 @@
 				Blue boxes contain references.
 				A reference consists of an offset denoting how far to look back, and a length showing how many literals
 				to copy.
-				The minimum length of a reference is 3 bytes - any less would be wasteful, as references take at least
-				two bytes space themselves.
+				The minimum length of a reference should be chosen as not to be wasteful. This depends on the encoding, with dynamic encoding more flexibility.
+				Note that references may contain themselves. For instance, 'aaaaa' can be stored as 'literal a' followed by 'reference offset 1, length 4'.
 			</p>
 			<p>
 				This variant of LZSS does not make use of Huffman trees, which would encode emitted symbols to represent
