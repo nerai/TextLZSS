@@ -329,7 +329,12 @@ function refresh () {
 			if (option.len < minMatchLength) {
 				return best;
 			}
-			return option.len > best.len ? option : best;
+			if (option.len == best.len) {
+				return option.bits < best.bits ? option : best;
+			}
+			else {
+				return option.len > best.len ? option : best;
+			}
 		};
 
 		/*
